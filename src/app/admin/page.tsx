@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Match, Team } from '@/types/match'
+import CreateMatchForm from "@/components/CreateMatchForm";
 
 const Adminpage = () => {
     const [matches, setMatches] = useState<Match[]>([])
@@ -26,6 +27,37 @@ const Adminpage = () => {
         }
 
         fetchData()
+
+        //  Realtime listener
+        const channel = supabase
+            .channel('public:matches')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'matches' },
+                (payload) => {
+                    if (payload.eventType === 'INSERT') {
+                        const inserted = payload.new as Match
+                        setMatches((prev) => [...prev, inserted])
+                    }
+
+                    if (payload.eventType === 'UPDATE') {
+                        const updated = payload.new as Match
+                        setMatches((prev) =>
+                            prev.map((m) => (m.id === updated.id ? updated : m))
+                        )
+                    }
+
+                    if (payload.eventType === 'DELETE') {
+                        const deleted = payload.old as Match
+                        setMatches((prev) => prev.filter((m) => m.id !== deleted.id))
+                    }
+                }
+            )
+            .subscribe()
+
+        return () => {
+            supabase.removeChannel(channel)
+        }
     }, []);
 
     const updateScore = async (
@@ -47,13 +79,31 @@ const Adminpage = () => {
     }
   return (
       <div className="space-y-8">
+          <main className="max-w-4xl mx-auto p-4 space-y-6">
+              <CreateMatchForm />
+              {/* Existing match list goes here */}
+          </main>
+
           <h1 className="text-2xl font-bold">Update Match Scores</h1>
 
           {matches.map((match) => {
               const home = teams[match.home_team]
               const away = teams[match.away_team]
 
+              const handleDelete = async (id: string) => {
+                  const confirm = window.confirm('Are you sure you want to delete this match?')
+                  if (!confirm) return
+
+                  const { error } = await supabase.from('matches').delete().eq('id', id)
+
+                  if (error) {
+                      console.error('Delete error:', error)
+                      alert('Something went wrong while deleting.')
+                  }
+              }
+
               return (
+
                   <form
                       key={match.id}
                       className="border border-gray-700 rounded-xl p-6 bg-gray-900 space-y-4"
@@ -139,8 +189,16 @@ const Adminpage = () => {
                       >
                           {loadingId === match.id ? 'Saving...' : 'Save Score'}
                       </button>
+
+                      <button
+                          onClick={() => handleDelete(match.id)}
+                          className="text-red-500 hover:text-red-600 text-sm"
+                      >
+                          🗑 Delete
+                      </button>
                   </form>
-              )
+
+          )
           })}
       </div>
   );

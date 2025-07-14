@@ -20,10 +20,21 @@ export default function ClientMatchList({ initialMatches, teams }: Props) {
                 'postgres_changes',
                 { event: '*', schema: 'public', table: 'matches' },
                 (payload) => {
-                    const updated = payload.new as Match
-                    setMatches((prev) =>
-                        prev.map((m) => (m.id === updated.id ? updated : m))
-                    )
+
+                    if (payload.eventType === 'UPDATE') {
+                        const updated = payload.new as Match
+                        setMatches((prev) =>
+                            prev.map((m) => (m.id === updated.id ? updated : m))
+                        )
+                    }
+                    if (payload.eventType === 'DELETE') {
+                        const deleted = payload.old as Match
+                        setMatches((prev) => prev.filter((m) => m.id !== deleted.id))
+                    }
+                    if (payload.eventType === 'INSERT') {
+                        const inserted = payload.new as Match
+                        setMatches((prev) => [...prev, inserted])
+                    }
                 }
             )
             .subscribe()
