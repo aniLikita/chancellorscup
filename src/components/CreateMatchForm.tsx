@@ -1,5 +1,5 @@
 'use client'
-
+// Component in the Admin Page
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Team } from '@/types/match'

@@ -16,12 +16,14 @@ export default async function HomePage() {
     teams?.forEach((team) => (teamMap[team.id] = team))
 
     return (
-        <main className="p-4 max-w-4xl mx-auto space-y-4">
-            <h1 className="text-2xl font-bold text-center text-white">
-                🏆 Chancellor’s Cup LiveScores
-            </h1>
+        <div className="min-h-screen bg-[#0a2351]">
+            <main className="p-4 max-w-4xl mx-auto space-y-4">
+                <h1 className="text-2xl font-bold text-center text-white pt-6">
+                    🏆 Chancellor's Cup LiveScores
+                </h1>
 
-            <ClientMatchList initialMatches={matches || []} teams={teamMap} />
-        </main>
+                <ClientMatchList initialMatches={matches || []} teams={teamMap} />
+            </main>
+        </div>
     )
 }

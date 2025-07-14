@@ -1,11 +1,12 @@
 'use client'
+// Page where admin can access
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Match, Team } from '@/types/match'
 import CreateMatchForm from "@/components/CreateMatchForm";
 
-const Adminpage = () => {
+const AdminPage = () => {
     const [matches, setMatches] = useState<Match[]>([])
     const [teams, setTeams] = useState<Record<string, Team>>({})
     const [loadingId, setLoadingId] = useState<string | null>(null)
@@ -204,4 +205,4 @@ const Adminpage = () => {
   );
 };
 
-export default Adminpage;
+export default AdminPage;
