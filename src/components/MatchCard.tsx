@@ -1,0 +1,60 @@
+'use client'
+
+import Image from 'next/image'
+import { Match, Team } from '@/types/match'
+
+type Props = {
+    match: Match
+    teams: Record<string, Team>
+}
+
+export default function MatchCard({ match, teams }: Props) {
+    const home = teams[match.home_team]
+    const away = teams[match.away_team]
+
+    return (
+        <div className="bg-gray-800 p-4 rounded-2xl shadow flex flex-col sm:flex-row justify-between items-center">
+            <div className="flex items-center gap-4">
+                {/* Home team */}
+                <div className="flex items-center gap-2">
+                    <Image
+                        src={home?.logo_url || '/default-logo.png'}
+                        alt={home?.name || 'Home'}
+                        width={30}
+                        height={30}
+                    />
+                    <span>{home?.short_name}</span>
+                </div>
+
+                {/* Score */}
+                <div className="text-2xl font-bold mx-4">
+                    {match.home_score} : {match.away_score}
+                </div>
+
+                {/* Away team */}
+                <div className="flex items-center gap-2">
+                    <Image
+                        src={away?.logo_url || '/default-logo.png'}
+                        alt={away?.name || 'Away'}
+                        width={30}
+                        height={30}
+                    />
+                    <span>{away?.short_name}</span>
+                </div>
+            </div>
+
+            {/* Match status */}
+            <span
+                className={`mt-2 sm:mt-0 px-3 py-1 text-xs rounded-full ${
+                    match.status === 'live'
+                        ? 'bg-red-600'
+                        : match.status === 'finished'
+                            ? 'bg-gray-500'
+                            : 'bg-yellow-500'
+                }`}
+            >
+        {match.status.toUpperCase()}
+      </span>
+        </div>
+    )
+}
