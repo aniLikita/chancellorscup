@@ -47,7 +47,7 @@ const AuthForm =
           {type === "SIGN_UP" && (
             <FormField
               control={form.control}
-              name= {'fullname' as Path<T>}
+              name= {'fullName' as Path<T>}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Full Name</FormLabel>

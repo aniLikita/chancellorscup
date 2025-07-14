@@ -7,7 +7,7 @@ import { z } from 'zod'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 
-const Page = () => {
+const SignInPage = () => {
     const router = useRouter();
     const handleSubmit = async (data: z.infer<typeof signInSchema>) => {
         const {email, password} = data
@@ -36,4 +36,4 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default SignInPage;

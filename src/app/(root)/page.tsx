@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { Team } from '@/types/match'
 import ClientMatchList from '@/components/ClientMatchList'
+import Navbar from "@/components/Navbar";
 
 export const dynamic = 'force-dynamic' // make this always SSR
 
@@ -16,14 +17,17 @@ export default async function HomePage() {
     teams?.forEach((team) => (teamMap[team.id] = team))
 
     return (
-        <div className="min-h-screen bg-[#0a2351]">
-            <main className="p-4 max-w-4xl mx-auto space-y-4">
-                <h1 className="text-2xl font-bold text-center text-white pt-6">
-                    🏆 Chancellor's Cup LiveScores
-                </h1>
+        <main>
+            <Navbar/>
+            <section className="min-h-screen bg-[#0a2351]">
+                <div className="p-4 max-w-4xl mx-auto space-y-4">
+                    <h1 className="text-2xl font-bold text-center text-white pt-6">
+                        🏆 Chancellors Cup LiveScores
+                    </h1>
 
-                <ClientMatchList initialMatches={matches || []} teams={teamMap} />
-            </main>
-        </div>
+                    <ClientMatchList initialMatches={matches || []} teams={teamMap} />
+                </div>
+            </section>
+        </main>
     )
 }
