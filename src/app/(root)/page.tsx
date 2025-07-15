@@ -1,8 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { Team } from '@/types/match'
-import MatchCarousel from '@/components/MatchCarousel'
-import Leaderboard from '@/components/Leaderboard'
 import Navbar from "@/components/Navbar";
+import ClientHomePage from "@/components/ClientHomePage";
 
 export const dynamic = 'force-dynamic' // make this always SSR
 
@@ -49,20 +48,7 @@ export default async function HomePage() {
                             Tournament Dashboard
                         </h2>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            {/* Matches Carousel - Left Side */}
-                            <div className="lg:col-span-2">
-                                <h3 className="text-xl font-bold text-white mb-4">Live Matches</h3>
-                                <div className="bg-white/5 rounded-lg p-4 mb-6">
-                                    <MatchCarousel matches={matches || []} teams={teamMap} />
-                                </div>
-                            </div>
-
-                            {/* Leaderboard - Right Side */}
-                            <div className="lg:col-span-1">
-                                <Leaderboard teams={teamMap} />
-                            </div>
-                        </div>
+                        <ClientHomePage initialMatches={matches || []} teams={teamMap} />
                     </div>
                 </div>
             </section>

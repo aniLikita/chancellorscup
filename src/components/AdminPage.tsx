@@ -11,19 +11,21 @@ const AdminPage = () => {
     const [teams, setTeams] = useState<Record<string, Team>>({})
     const [loadingId, setLoadingId] = useState<string | null>(null)
 
+    const fetchMatches = async () => {
+        const {data: matchesData} = await supabase
+            .from('matches')
+            .select('*')
+            .order('start_time', {ascending: true})
+            setMatches(matchesData || [])
+    }
     useEffect(() => {
         const fetchData = async () => {
-            const { data: matchesData } = await supabase
-                .from('matches')
-                .select('*')
-                .order('start_time', { ascending: true })
+            await fetchMatches()
 
             const { data: teamData } = await supabase.from('teams').select('*')
 
             const teamMap: Record<string, Team> = {}
             teamData?.forEach((team) => (teamMap[team.id] = team))
-
-            setMatches(matchesData || [])
             setTeams(teamMap)
         }
 

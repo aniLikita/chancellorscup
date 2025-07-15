@@ -1,6 +1,6 @@
 'use client'
 
-import { Team } from '@/types/match'
+import { Team, Match } from '@/types/match'
 import Image from 'next/image'
 
 type LeaderboardTeam = {
@@ -16,23 +16,64 @@ type LeaderboardTeam = {
 
 type Props = {
     teams: Record<string, Team>
+    matches: Match[]
 }
 
-export default function Leaderboard({ teams }: Props) {
-    // In a real application, this data would come from the database
-    // For now, we'll create some mock data based on the teams we have
+export default function Leaderboard({ teams, matches}: Props) {
     const leaderboardData: LeaderboardTeam[] = Object.values(teams)
-        .map(team => ({
-            team,
-            points: Math.floor(Math.random() * 30),
-            played: Math.floor(Math.random() * 15),
-            won: Math.floor(Math.random() * 10),
-            drawn: Math.floor(Math.random() * 5),
-            lost: Math.floor(Math.random() * 5),
-            goalsFor: Math.floor(Math.random() * 30),
-            goalsAgainst: Math.floor(Math.random() * 20),
-        }))
-        .sort((a, b) => b.points - a.points);
+        .map((team)=> {
+            const playedMatches = matches.filter(
+                (m) =>
+                    m.status === 'finished' &&
+                    (m.home_team === team.id || m.away_team === team.id)
+            )
+
+            let won = 0,
+                drawn = 0,
+                lost = 0,
+                goalsFor = 0,
+                goalsAgainst = 0
+
+            playedMatches.forEach((match) => {
+                const isHome = match.home_team === team.id
+                const myScore = isHome ? match.home_score : match.away_score
+                const oppScore = isHome ? match.away_score : match.home_score
+
+                goalsFor += myScore
+                goalsAgainst += oppScore
+
+                if (myScore > oppScore) won++
+                else if (myScore === oppScore) drawn++
+                else lost++
+            })
+
+            const played = won + drawn + lost
+            const points = won * 3 + drawn
+
+
+            return {
+                team,
+                played,
+                won,
+                drawn,
+                lost,
+                goalsFor,
+                goalsAgainst,
+                points,
+            }
+
+        })
+
+        .sort ((a, b) => {
+         if (b.points === a.points)  {
+            const goalDiffA = a.goalsFor - a.goalsAgainst
+            const goalDiffB = b.goalsFor - b.goalsAgainst
+            return goalDiffB - goalDiffA
+        }
+        return b.points - a.points
+
+        })
+
 
     return (
         <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4">
