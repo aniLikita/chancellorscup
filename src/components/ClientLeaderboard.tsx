@@ -9,6 +9,5 @@ type Props = {
 }
 
 export default function ClientLeaderboard({ initialMatches, teams }: Props) {
-    // Simply pass through the data from parent
     return <Leaderboard matches={initialMatches} teams={teams} />
 }

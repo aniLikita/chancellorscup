@@ -2,14 +2,16 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
+import gsap from 'gsap'
 
 const Navbar = () => {
     const router = useRouter();
     const [user, setUser] = useState<any>(null);
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
+    const navRef = useRef(null)
 
     useEffect(() => {
         const getUser = async () => {
@@ -33,17 +35,35 @@ const Navbar = () => {
         getUser();
     }, []);
 
+    useEffect(() => {
+        if (navRef.current) {
+            gsap.fromTo(
+                navRef.current,
+                { y: -50, opacity: 0 },
+                {
+                    y: 0,
+                    opacity: 1,
+                    duration: 1,
+                    ease: 'power3.out',
+                }
+            )
+        }
+    }, [])
+
     const handleLogout = async () => {
         await supabase.auth.signOut();
         router.push("/sign-in");
     };
 
     return (
-        <nav className="bg-gradient-to-r from-blue-900 to-indigo-900 text-white px-6 py-4 sticky top-0 z-50 shadow-lg">
+        <nav
+            ref={navRef}
+            className="bg-gradient-to-r from-[#0e1d38]/70 to-[#192b4d]/70 backdrop-blur-md text-white px-6 py-4 sticky top-0 z-50 shadow-lg border-b border-white/10"
+        >
             <div className="max-w-7xl mx-auto flex justify-between items-center">
                 <Link href="/" className="flex items-center space-x-2 group">
                     <span className="text-2xl">🏆</span>
-                    <span className="text-xl font-bold tracking-tight group-hover:text-yellow-300 transition-colors duration-300">
+                    <span className="text-xl font-extrabold tracking-tight group-hover:text-yellow-400 transition-colors duration-300">
                         Chancellors Cup
                     </span>
                 </Link>
@@ -53,21 +73,34 @@ const Navbar = () => {
                     className="md:hidden flex items-center"
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d={
+                                isMenuOpen
+                                    ? "M6 18L18 6M6 6l12 12"
+                                    : "M4 6h16M4 12h16M4 18h16"
+                            }
+                        />
                     </svg>
                 </button>
 
                 {/* Desktop menu */}
                 <div className="hidden md:flex items-center space-x-4">
-                    <Link href="/" className="hover:text-yellow-300 transition-colors duration-300 px-3 py-2">
-                        Home
-                    </Link>
+                    <NavLink href="/">Home</NavLink>
 
                     {user && isAdmin && (
                         <Link
                             href="/admin"
-                            className="bg-indigo-700 hover:bg-indigo-600 text-white px-4 py-2 rounded-md transition-colors duration-300"
+                            className="px-4 py-2 rounded-md  hover:border-indigo-600 transition"
                         >
                             Admin
                         </Link>
@@ -76,14 +109,14 @@ const Navbar = () => {
                     {user ? (
                         <button
                             onClick={handleLogout}
-                            className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-md transition-colors duration-300"
+                            className=" hover:border-red-500 text-white px-4 py-2 rounded-md transition-colors duration-300"
                         >
                             Logout
                         </button>
                     ) : (
                         <Link
                             href="/sign-in"
-                            className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-md transition-colors duration-300"
+                            className="px-4 py-2 rounded-md  hover:border-blue-500 transition"
                         >
                             Sign In
                         </Link>
@@ -93,14 +126,12 @@ const Navbar = () => {
 
             {/* Mobile menu */}
             <div className={`md:hidden ${isMenuOpen ? 'block' : 'hidden'} pt-4 pb-2 space-y-3 transition-all duration-300`}>
-                <Link href="/" className="block hover:bg-indigo-800 px-3 py-2 rounded-md">
-                    Home
-                </Link>
+                <NavLink href="/">Home</NavLink>
 
                 {user && isAdmin && (
                     <Link
                         href="/admin"
-                        className="block hover:bg-indigo-800 px-3 py-2 rounded-md"
+                        className="px-4 py-2 rounded-md  hover:bg-indigo-600 transition"
                     >
                         Admin
                     </Link>
@@ -109,14 +140,14 @@ const Navbar = () => {
                 {user ? (
                     <button
                         onClick={handleLogout}
-                        className="block w-full text-left hover:bg-indigo-800 px-3 py-2 rounded-md"
+                        className="px-4 py-2 rounded-md  hover:bg-red-500 transition"
                     >
                         Logout
                     </button>
                 ) : (
                     <Link
                         href="/sign-in"
-                        className="block hover:bg-indigo-800 px-3 py-2 rounded-md"
+                        className="px-4 py-2 rounded-md  hover:bg-blue-500 transition"
                     >
                         Sign In
                     </Link>
@@ -124,6 +155,15 @@ const Navbar = () => {
             </div>
         </nav>
     );
-};
+}
+const NavLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
+    <Link
+        href={href}
+        className="relative px-3 py-2 text-white hover:text-yellow-300 transition"
+    >
+        <span className="relative z-10">{children}</span>
+        <span className="absolute bottom-1 left-1/2 w-0 h-0.5 bg-yellow-300 transition-all duration-300 group-hover:w-full group-hover:left-0" />
+    </Link>
+)
 
 export default Navbar;

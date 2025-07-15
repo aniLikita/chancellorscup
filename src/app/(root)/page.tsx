@@ -1,3 +1,4 @@
+
 import { supabase } from '@/lib/supabase'
 import { Team } from '@/types/match'
 import Navbar from "@/components/Navbar";
@@ -19,7 +20,6 @@ export default async function HomePage() {
     return (
         <main className="min-h-screen bg-gradient-to-b from-blue-900 via-indigo-900 to-[#0a2351]">
             <Navbar/>
-
             {/* Hero Section */}
             <section className="relative py-16 md:py-24 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-800/30 to-indigo-800/30 opacity-20"></div>

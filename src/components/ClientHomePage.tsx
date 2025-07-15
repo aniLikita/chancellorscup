@@ -1,10 +1,14 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import {useEffect, useRef, useState} from 'react'
 import { Team, Match } from '@/types/match'
 import { supabase } from '@/lib/supabase'
 import ClientMatchCarousel from './ClientMatchCarousel'
 import ClientLeaderboard from './ClientLeaderboard'
+import gsap from 'gsap'
+import {ScrollTrigger} from "gsap/ScrollTrigger"
+
+gsap.registerPlugin(ScrollTrigger)
 
 type Props = {
     initialMatches: Match[]
@@ -14,6 +18,29 @@ type Props = {
 export default function ClientHomePage({ initialMatches, teams: initialTeams }: Props) {
     const [matches, setMatches] = useState<Match[]>(initialMatches)
     const [teams, setTeams] = useState<Record<string, Team>>(initialTeams)
+
+    const sectionRef = useRef(null);
+
+    //Animations
+    useEffect(() => {
+        if (sectionRef.current) {
+            gsap.fromTo(
+                sectionRef.current,
+                { y: 60, opacity: 0 },
+                {
+                    y: 0,
+                    opacity: 1,
+                    duration: 1,
+                    ease: 'power3.out',
+                    scrollTrigger: {
+                        trigger: sectionRef.current,
+                        start: 'top 80%',
+                        toggleActions: 'play none none none',
+                    },
+                }
+            )
+        }
+    }, []);
 
     // Real-time listener for matches
     useEffect(() => {
@@ -86,18 +113,27 @@ export default function ClientHomePage({ initialMatches, teams: initialTeams }: 
     }, [])
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div
+            ref={sectionRef}
+            className="grid grid-cols-1 lg:grid-cols-3 gap-10 md:gap-16 mt-8"
+        >
             {/* Matches Carousel - Left Side */}
-            <div className="lg:col-span-2">
-                <h3 className="text-xl font-bold text-white mb-4">Live Matches</h3>
-                <div className="bg-white/5 rounded-lg p-4 mb-6">
+            <div className="lg:col-span-2 space-y-4">
+                <h3 className="text-2xl font-bold text-yellow-400">Live Matches</h3>
+                <div
+                    className="bg-white/5 border border-white/10
+                    rounded-xl p-6 shadow-lg backdrop-blur-sm
+                    hover:ring-1 hover:ring-yellow-400 transition-all duration-300">
                     <ClientMatchCarousel initialMatches={matches} teams={teams} />
                 </div>
             </div>
 
             {/* Leaderboard - Right Side */}
-            <div className="lg:col-span-1">
-                <ClientLeaderboard initialMatches={matches} teams={teams} />
+            <div className="lg:col-span-1 space-y-4">
+                <h3 className="text-2xl font-bold text-yellow-400">Leaderboard</h3>
+                <div className="bg-white/5 border border-white/10 rounded-xl p-6 shadow-lg backdrop-blur-sm">
+                    <ClientLeaderboard initialMatches={matches} teams={teams} />
+                </div>
             </div>
         </div>
     )

@@ -9,6 +9,9 @@ type Props = {
 }
 
 export default function ClientMatchCarousel({ initialMatches, teams }: Props) {
-    // Simply pass through the data from parent
-    return <MatchCarousel matches={initialMatches} teams={teams} />
+    return (
+        <div className="relative overflow-hidden">
+            <MatchCarousel matches={initialMatches} teams={teams} />
+        </div>
+    )
 }

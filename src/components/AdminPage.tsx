@@ -1,15 +1,20 @@
 'use client'
 // Page where admin can access
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Match, Team } from '@/types/match'
 import CreateMatchForm from "@/components/CreateMatchForm";
+import gsap from 'gsap'
+import ScrollTrigger from 'gsap/ScrollTrigger'
+
+gsap.registerPlugin(ScrollTrigger)
 
 const AdminPage = () => {
     const [matches, setMatches] = useState<Match[]>([])
     const [teams, setTeams] = useState<Record<string, Team>>({})
     const [loadingId, setLoadingId] = useState<string | null>(null)
+    const sectionRef = useRef(null)
 
     const fetchMatches = async () => {
         const {data: matchesData} = await supabase
@@ -18,6 +23,27 @@ const AdminPage = () => {
             .order('start_time', {ascending: true})
             setMatches(matchesData || [])
     }
+
+    useEffect(() => {
+        if (sectionRef.current) {
+            gsap.fromTo(
+                sectionRef.current,
+                { y: 50, opacity: 0 },
+                {
+                    y: 0,
+                    opacity: 1,
+                    duration: 1,
+                    ease: 'power2.out',
+                    scrollTrigger: {
+                        trigger: sectionRef.current,
+                        start: 'top 85%',
+                    },
+                }
+            )
+        }
+    }, [])
+
+
     useEffect(() => {
         const fetchData = async () => {
             await fetchMatches()
@@ -81,128 +107,138 @@ const AdminPage = () => {
         setLoadingId(null)
     }
   return (
-      <div className="space-y-8">
-          <main className="max-w-4xl mx-auto p-4 space-y-6">
+      <div ref={sectionRef}
+           className="min-h-screen bg-gradient-to-b from-[#0a0f1e] via-[#10182b] to-[#050c19] text-white px-4 py-12 space-y-10">
+          <div className="max-w-4xl mx-auto space-y-10">
+              <h2 className="text-2xl font-bold text-yellow-400 mb-4">Create New Match</h2>
               <CreateMatchForm />
-              {/* Existing match list goes here */}
-          </main>
+          </div>
 
-          <h1 className="text-2xl font-bold">Update Match Scores</h1>
 
-          {matches.map((match) => {
-              const home = teams[match.home_team]
-              const away = teams[match.away_team]
 
-              const handleDelete = async (id: string) => {
-                  const confirm = window.confirm('Are you sure you want to delete this match?')
-                  if (!confirm) return
+          <div className="space-y-4">
+              <h2 className="text-2xl font-bold text-yellow-400 mb-4">Update Match Scores</h2>
 
-                  const { error } = await supabase.from('matches').delete().eq('id', id)
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {matches.map((match) => {
+                      const home = teams[match.home_team]
+                      const away = teams[match.away_team]
 
-                  if (error) {
-                      console.error('Delete error:', error)
-                      alert('Something went wrong while deleting.')
-                  }
-              }
+                      const handleDelete = async (id: string) => {
+                          const confirm = window.confirm('Delete this match?')
+                          if (!confirm) return
 
-              return (
+                          const { error } = await supabase.from('matches').delete().eq('id', id)
+                          if (error) alert('Error deleting match')
+                      }
 
-                  <form
-                      key={match.id}
-                      className="border border-gray-700 rounded-xl p-6 bg-gray-900 space-y-4"
-                      onSubmit={(e) => {
-                          e.preventDefault()
-                          updateScore(match.id, match.home_score, match.away_score, match.status)
-                      }}
-                  >
-                      <div className="flex justify-between items-center">
-                          <h2 className="text-lg font-semibold">
-                              {home?.short_name || 'Home'} vs {away?.short_name || 'Away'}
-                          </h2>
-                          <span className="text-sm text-gray-400">{match.status}</span>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                          <div>
-                              <label className="block mb-1 text-sm font-medium text-gray-300">
-                                  {home?.short_name || 'Home'} Score
-                              </label>
-                              <input
-                                  type="number"
-                                  className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white"
-                                  value={match.home_score?.toString() || ''}
-                                  onChange={(e) =>
-                                      setMatches((prev) =>
-                                          prev.map((m) =>
-                                              m.id === match.id
-                                                  ? { ...m, home_score: parseInt(e.target.value) }
-                                                  : m
-                                          )
-                                      )
-                                  }
-                              />
-                          </div>
-
-                          <div>
-                              <label className="block mb-1 text-sm font-medium text-gray-300">
-                                  {away?.short_name || 'Away'} Score
-                              </label>
-                              <input
-                                  type="number"
-                                  className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white"
-                                  value={match.away_score?.toString() || ''}
-                                  onChange={(e) =>
-                                      setMatches((prev) =>
-                                          prev.map((m) =>
-                                              m.id === match.id
-                                                  ? { ...m, away_score: parseInt(e.target.value) }
-                                                  : m
-                                          )
-                                      )
-                                  }
-                              />
-                          </div>
-                      </div>
-
-                      <div>
-                          <label className="block mb-1 text-sm text-gray-300">Match Status</label>
-                          <select
-                              value={match.status}
-                              onChange={(e) =>
-                                  setMatches((prev) =>
-                                      prev.map((m) =>
-                                          m.id === match.id ? { ...m, status: e.target.value as Match['status'] } : m
-                                      )
+                      return (
+                          <form
+                              key={match.id}
+                              onSubmit={(e) => {
+                                  e.preventDefault()
+                                  updateScore(
+                                      match.id,
+                                      match.home_score,
+                                      match.away_score,
+                                      match.status
                                   )
-                              }
-                              className="w-full px-3 py-2 rounded bg-gray-800 border border-gray-600 text-white"
+                              }}
+                              className="bg-white/5 p-4 rounded-xl border border-white/10 backdrop-blur-md shadow-md space-y-3 text-sm"
                           >
-                              <option value="upcoming">Upcoming</option>
-                              <option value="live">Live</option>
-                              <option value="finished">Finished</option>
-                          </select>
-                      </div>
+                              <div className="flex justify-between items-center">
+                                  <h3 className="font-semibold text-white truncate">
+                                      {home?.short_name || 'Home'} vs {away?.short_name || 'Away'}
+                                  </h3>
+                                  <span className="text-xs text-white/50">{match.status}</span>
+                              </div>
 
+                              <div className="grid grid-cols-2 gap-2">
+                                  <div>
+                                      <label className="block text-xs text-white/70 mb-1">
+                                          {home?.short_name || 'Home'} Score
+                                      </label>
+                                      <input
+                                          type="number"
+                                          className="w-full bg-gray-900 text-white p-1.5 rounded border border-gray-700"
+                                          value={match.home_score?.toString() || ''}
+                                          onChange={(e) =>
+                                              setMatches((prev) =>
+                                                  prev.map((m) =>
+                                                      m.id === match.id
+                                                          ? { ...m, home_score: parseInt(e.target.value) }
+                                                          : m
+                                                  )
+                                              )
+                                          }
+                                      />
+                                  </div>
 
+                                  <div>
+                                      <label className="block text-xs text-white/70 mb-1">
+                                          {away?.short_name || 'Away'} Score
+                                      </label>
+                                      <input
+                                          type="number"
+                                          className="w-full bg-gray-900 text-white p-1.5 rounded border border-gray-700"
+                                          value={match.away_score?.toString() || ''}
+                                          onChange={(e) =>
+                                              setMatches((prev) =>
+                                                  prev.map((m) =>
+                                                      m.id === match.id
+                                                          ? { ...m, away_score: parseInt(e.target.value) }
+                                                          : m
+                                                  )
+                                              )
+                                          }
+                                      />
+                                  </div>
+                              </div>
 
-                      <button
-                          type="submit"
-                          disabled={loadingId === match.id}
-                          className="mt-4 inline-block px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-medium"
-                      >
-                          {loadingId === match.id ? 'Saving...' : 'Save Score'}
-                      </button>
+                              <div>
+                                  <label className="block text-xs text-white/70 mb-1">Status</label>
+                                  <select
+                                      value={match.status}
+                                      onChange={(e) =>
+                                          setMatches((prev) =>
+                                              prev.map((m) =>
+                                                  m.id === match.id
+                                                      ? { ...m, status: e.target.value as Match['status'] }
+                                                      : m
+                                              )
+                                          )
+                                      }
+                                      className="w-full bg-gray-900 text-white p-1.5 rounded border border-gray-700"
+                                  >
+                                      <option value="upcoming">Upcoming</option>
+                                      <option value="live">Live</option>
+                                      <option value="finished">Finished</option>
+                                  </select>
+                              </div>
 
-                      <button
-                          onClick={() => handleDelete(match.id)}
-                          className="text-red-500 hover:text-red-600 text-sm"
-                      >
-                          🗑 Delete
-                      </button>
-                  </form>
+                              <div className="flex justify-between items-center pt-2">
+                                  <button
+                                      type="submit"
+                                      disabled={loadingId === match.id}
+                                      className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs"
+                                  >
+                                      {loadingId === match.id ? 'Saving...' : 'Save'}
+                                  </button>
 
-          )
-          })}
+                                  <button
+                                      type="button"
+                                      onClick={() => handleDelete(match.id)}
+                                      className="text-red-400 hover:text-red-500 text-xs"
+                                  >
+                                      🗑 Delete
+                                  </button>
+                              </div>
+                          </form>
+                      )
+                  })}
+              </div>
+          </div>
+
       </div>
   );
 };
