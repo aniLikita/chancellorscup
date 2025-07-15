@@ -14,32 +14,32 @@ export default function MatchCard({ match, teams }: Props) {
 
     return (
         <div className="bg-gray-800 p-4 rounded-2xl shadow flex flex-col sm:flex-row justify-between items-center">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center justify-center w-full sm:w-auto gap-6">
                 {/* Home team */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 justify-end min-w-[100px]">
                     <Image
                         src={home?.logo_url || '/default-logo.png'}
                         alt={home?.name || 'Home'}
-                        width={30}
-                        height={30}
+                        width={40}
+                        height={40}
                     />
-                    <span>{home?.short_name}</span>
+                    <span className="font-medium">{home?.short_name}</span>
                 </div>
 
                 {/* Score */}
-                <div className="text-2xl font-bold mx-4">
+                <div className="text-3xl font-bold mx-4 text-center min-w-[80px]">
                     {match.home_score} : {match.away_score}
                 </div>
 
                 {/* Away team */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 justify-start min-w-[100px]">
                     <Image
                         src={away?.logo_url || '/default-logo.png'}
                         alt={away?.name || 'Away'}
-                        width={30}
-                        height={30}
+                        width={40}
+                        height={40}
                     />
-                    <span>{away?.short_name}</span>
+                    <span className="font-medium">{away?.short_name}</span>
                 </div>
             </div>
 
